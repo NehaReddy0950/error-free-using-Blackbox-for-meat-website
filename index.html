@@ -40,7 +40,7 @@
     }
 
     /* Styles for each product */
-  .product {
+    .product {
       background-color: #f9f9f9;
       border: 1px solid #ccc;
       margin-bottom: 1rem;
@@ -63,6 +63,7 @@
       flex-basis: 30%;
       padding: 1rem;
       text-align: center;
+      display: none; /* Initially hidden */
     }
 
     /* Styles for the bill section */
@@ -89,7 +90,8 @@
   </header>
   <main>
     <section id="products">
-      <!-- Products will be inserted here by JavaScript -->
+      <!-- Products -->
+      <!-- Include products here -->
     </section>
     <section id="amount-box">
       <h2>Amount Box</h2>
@@ -118,185 +120,73 @@
   <script>
     // Array of products
     const products = [
-      {
-        name: 'Basa Fish',
-        image: 'basa-fish.jpg',
-        price: 15,
-        weight: 1,
-      },
-      {
-        name: 'Rupchand Fish',
-        image: 'rupchand-fish.jpg',
-        price: 20,
-        weight: 1,
-      },
-      {
-        name: 'Brown Crab',
-        image: 'brown-crab.jpg',
-        price: 30,
-        weight: 1,
-      },
-      {
-        name: 'Prawns',
-        image: 'prawns.jpg',
-        price: 25,
-        weight: 1,
-      },
-      {
-        name: 'Roasters',
-        image: 'roasters.jpg',
-        price: 12,
-        weight: 1,
-      },
-      {
-        name: 'Broilers',
-        image: 'broilers.jpg',
-        price: 10,
-        weight: 1,
-      },
-      {
-        name: 'Mutton Body',
-        image: 'mutton-body.jpg',
-        price: 22,
-        weight: 1,
-      },
-      {
-        name: 'Mutton Head',
-        image: 'mutton-head.jpg',
-        price: 18,
-        weight: 1,
-      },
-{
-        name: 'Pork',
-        image: 'pork.jpg',
-        price: 16,
-        weight: 1,
-      },
-      {
-        name: 'Beef',
-        image: 'beef.jpg',
-        price: 20,
-        weight: 1,
-      },
+      { name: 'Basa Fish', price: 15 },
+      { name: 'Rupchand Fish', price: 20 },
+      { name: 'Brown Crab', price: 30 },
+      { name: 'Prawns', price: 25 },
+      { name: 'Roasters', price: 12 },
+      { name: 'Broilers', price: 10 },
+      { name: 'Mutton Body', price: 22 },
+      { name: 'Mutton Head', price: 18 },
+      { name: 'Pork', price: 16 },
+      { name: 'Beef', price: 20 }
     ];
 
-    // Create the products section
+    // Add products to the DOM
     const productsSection = document.getElementById('products');
-    let totalCost = 0;
-
-    // Loop through the products array and create a div for each product
     products.forEach(product => {
       const productElement = document.createElement('div');
       productElement.classList.add('product');
-
-      // Add the product image
-      const imageElement = document.createElement('img');
-      imageElement.src = product.image;
-      imageElement.alt = product.name;
-      productElement.appendChild(imageElement);
-
-      // Add the product name
-      const nameElement = document.createElement('h3');
-      nameElement.textContent = product.name;
-      productElement.appendChild(nameElement);
-
-      // Add the product price
-      const priceElement = document.createElement('p');
-      priceElement.textContent = `Price per kg: $${product.price}`;
-      productElement.appendChild(priceElement);
-
-      // Add the product quantity input
-      const quantityElement = document.createElement('input');
-      quantityElement.type = 'number';
-      quantityElement.min = '0';
-      quantityElement.value = '0';
-      productElement.appendChild(quantityElement);
-
-      // Add the product add to cart button
-      const addToCartButton = document.createElement('button');
-      addToCartButton.textContent = 'Add to Cart';
-      productElement.appendChild(addToCartButton);
-
-      // Add the product div to the products section
+      productElement.innerHTML = `
+        <h3>${product.name}</h3>
+        <p>Price per kg: $${product.price}</p>
+        <label for="${product.name.replace(/\s+/g, '-').toLowerCase()}-quantity">Quantity:</label>
+        <input type="number" id="${product.name.replace(/\s+/g, '-').toLowerCase()}-quantity" min="0">
+        <button>Add to Cart</button>
+      `;
       productsSection.appendChild(productElement);
-
-      // Add an event listener to the add to cart button
-      addToCartButton.addEventListener('click', () => {
-        const quantity = parseInt(quantityElement.value);
-        if (quantity > 0) {
-          totalCost += product.price * quantity;
-        }
-
-        // Update the amount box
-        updateAmountBox();
-      });
     });
 
-    // Function to update the amount box
-    function updateAmountBox() {
-      const totalCostElement = document.getElementById('total-cost');
+    // Update total cost
+    let totalCost = 0;
+    const totalCostElement = document.getElementById('total-cost');
+    const updateTotalCost = () => {
+      totalCost = 0;
+      document.querySelectorAll('.product').forEach(productElement => {
+        const quantity = parseInt(productElement.querySelector('input[type="number"]').value);
+        totalCost += isNaN(quantity) ? 0 : quantity * products.find(product => product.name === productElement.querySelector('h3').textContent).price;
+      });
       totalCostElement.textContent = `$${totalCost.toFixed(2)}`;
-    }
+    };
 
-    // Add an event listener to the checkout button
+    // Event listeners
     const checkoutButton = document.getElementById('checkout-button');
     checkoutButton.addEventListener('click', () => {
       const paymentDetailsSection = document.getElementById('payment-details');
       paymentDetailsSection.style.display = 'block';
     });
 
-    // Add an event listener to the payment form
     const paymentForm = document.getElementById('payment-form');
-    paymentForm.addEventListener('submit', (event) => {
+    paymentForm.addEventListener('submit', event => {
       event.preventDefault();
-
-      // Get the payment details from the form
       const address = document.getElementById('address').value;
       const phone = document.getElementById('phone').value;
 
-      // Create the bill section
       const billSection = document.getElementById('bill');
-
-      // Create the bill element
-      const billElement = document.createElement('div');
-      billElement.classList.add('bill');
-
-      // Add the actual total price
-      const actualTotalPriceElement = document.createElement('p');
-      actualTotalPriceElement.textContent = `Actual Total Price: $${totalCost.toFixed(2)}`;
-      billElement.appendChild(actualTotalPriceElement);
-
-      // Calculate the discount price
-      let discountPrice = 0;
-      if (totalCost > 2000) {
-        discountPrice = totalCost * 0.2;
-      }
-
-      // Add the discount price
-      const discountPriceElement = document.createElement('p');
-      discountPriceElement.textContent = `Discount Price: -$${discountPrice.toFixed(2)}`;
-      billElement.appendChild(discountPriceElement);
-
-      // Calculate the price after discount
-      const priceAfterDiscountElement = document.createElement('p');
-      priceAfterDiscountElement.textContent = `Price After Discount: $${(totalCost - discountPrice).toFixed(2)}`;
-     billElement.appendChild(priceAfterDiscountElement);
-
-      // Add the bill element to the bill section
-      billSection.appendChild(billElement);
-
-      // Create the thank you section
-      const thankYouSection = document.createElement('div');
-      thankYouSection.classList.add('thank-you');
-
-      // Add the thank you message
-      const thankYouMessageElement = document.createElement('p');
-      thankYouMessageElement.textContent = 'Thank You for shopping with us! Your order is confirmed.';
-      thankYouSection.appendChild(thankYouMessageElement);
-
-      // Add the thank you section to the bill section
-      billSection.appendChild(thankYouSection);
+      billSection.innerHTML = `
+        <div class="bill">
+          <p>Actual Total Price: $${totalCost.toFixed(2)}</p>
+          <p>Discount Price: $0.00</p>
+          <p>Price After Discount: $${totalCost.toFixed(2)}</p>
+        </div>
+        <div class="thank-you">
+          <p>Thank You for shopping with us! Your order is confirmed.</p>
+        </div>
+      `;
     });
+
+    // Add event listener for input changes
+    productsSection.addEventListener('input', updateTotalCost);
   </script>
 </body>
 </html>
